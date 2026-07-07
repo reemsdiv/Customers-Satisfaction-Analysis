@@ -10,6 +10,9 @@ OUTPUT_FILE = "data_cleaned.xlsx"
 # header=1 makes the second row the header row used in df
 df = pd.read_excel(INPUT_FILE, header=1)
 
+# Keep the question-text row so we can write it back on top of the cleaned output
+question_row = pd.read_excel(INPUT_FILE, header=None, nrows=1).iloc[0].tolist()
+
 print("Row count before cleaning:", len(df))
 print("Column count before cleaning:", len(df.columns))
 
@@ -84,7 +87,15 @@ for col in reason_cols:
     df.loc[df[col].isin(["nan", "None", ""]), col] = np.nan
 
 
-df.to_excel(OUTPUT_FILE, index=False)
+# Pad the question row with blanks for the new columns we computed (start_time_full, end_time_full, survey_duration_minutes)
+question_row += [""] * (len(df.columns) - len(question_row))
+
+with pd.ExcelWriter(OUTPUT_FILE, engine="openpyxl") as writer:
+    # Write the data with its header starting at row 2 (Excel row 2), leaving row 1 free for the questions
+    df.to_excel(writer, index=False, startrow=1)
+    worksheet = writer.sheets[writer.book.sheetnames[0]]
+    for col_idx, question_text in enumerate(question_row, start=1):
+        worksheet.cell(row=1, column=col_idx, value=question_text)
 
 print("Row count after cleaning:", len(df))
 print("Column count after cleaning:", len(df.columns))
