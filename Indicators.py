@@ -18,7 +18,6 @@ NPS_COL = "Q8"
 # دوال حساب المؤشرات
 
 def calc_csat(series):
-    """CSAT لسؤال واحد = % (راضٍ تماماً + راضٍ نوعاً ما) من إجمالي المجيبين على السؤال."""
     s = series.dropna()
     if len(s) == 0:
         return None
@@ -27,23 +26,21 @@ def calc_csat(series):
 
 
 def calc_ces(series):
-    """CES = % (سهل جداً + سهل نوعاً ما) - % (صعب + صعب نوعاً ما). النطاق -100 إلى 100."""
     s = series.dropna()
     if len(s) == 0:
         return None
-    easy = s.isin([4, 5]).sum()
-    hard = s.isin([1, 2]).sum()
-    return round(((easy - hard) / len(s)) * 100, 2)
+    easy = round((s.isin([4, 5]).sum() / len(s) ) * 100, 2)
+    hard = round((s.isin([1, 2]).sum() / len(s)) * 100, 2)
+    return (easy - hard)
 
 
 def calc_nps(series):
-    """NPS = % الموصون (9-10) - % غير الموصون (0-6). النطاق -100 إلى 100."""
     s = series.dropna()
     if len(s) == 0:
         return None
-    promoters = s.isin([9, 10]).sum()
-    detractors = s[s <= 6].shape[0]
-    return round(((promoters - detractors) / len(s)) * 100, 2)
+    promoters = round((s.isin([9, 10]).sum() / len(s)) * 100, 2)
+    detractors = round((s[s <= 6].shape[0] / len(s)) * 100, 2)
+    return (promoters - detractors) 
 
 
 # ============================================================
